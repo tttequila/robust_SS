@@ -1,0 +1,4 @@
+['/mntnfs/lee_data1/chenshutang/robust_SS/avhubert_multilayer_masked', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python38.zip', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python3.8', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python3.8/lib-dynload', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python3.8/site-packages', '/mntnfs/lee_data1/chenshutang/robust_SS/common_utils']
+Loading weights for AV_HuBERT
+param: 129.432105 Mb
+torch.Size([2, 48000])
