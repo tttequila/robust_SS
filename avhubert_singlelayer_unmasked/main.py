@@ -78,6 +78,8 @@ if __name__ == '__main__':
     parser.add_argument('--audio_direc', type=str, default='/workspace/liuqinghua/datasets/lrs3/wav/')
     parser.add_argument('--video_direc', type=str, default='/workspace/liuqinghua/datasets/lrs3/')
     parser.add_argument('--max_length', default=6, type=int)
+    parser.add_argument('--mask_percentage', default=0.2, type=float,
+                    help='Percentage of masking video sequence')
     
     # Training    
     parser.add_argument('--batch_size', default=4, type=int,
@@ -95,6 +97,8 @@ if __name__ == '__main__':
                         help='Number of filters in autoencoder')
     parser.add_argument('--C', type=int, default=2,
                         help='number of speakers to mix')
+    parser.add_argument('--pretrain_grad', default=False, type=bool,
+                        help='Set up the parameter of pretained model')
 
     # optimizer
     parser.add_argument('--lr', default=1e-3, type=float,
@@ -124,9 +128,11 @@ if __name__ == '__main__':
         args.distributed = int(os.environ['WORLD_SIZE']) > 1
         args.world_size = int(os.environ['WORLD_SIZE'])
 
+    print('Experiment Config:\n', args)
+
     assert torch.backends.cudnn.enabled, "Amp requires cudnn backend to be enabled."
     
-    # main(args)
-    test_model()    
+    main(args)
+    # test_model()    
     
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -J masking_avhubert
-#SBATCH -p p-RTX2080
+#SBATCH -p p-A100
 #SBATCH -N 1
 #SBATCH --cpus-per-task=6
 #SBATCH --gres=gpu:1

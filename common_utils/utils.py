@@ -22,7 +22,7 @@ class dataset(data.Dataset):
                 mixture_direc,
                 mask_type,
                 batch_size,
-                masking_rate=0.2,
+                mask_percentage=0.2,
                 partition='test',
                 audio_only=False,
                 sampling_rate=16000,
@@ -40,7 +40,7 @@ class dataset(data.Dataset):
         self.C=mix_no
         self.speaker_id=speaker_dict
         self.mask_type = mask_type
-        self.masking_rate=masking_rate
+        self.mask_percentage=mask_percentage
 
         mix_lst=open(mix_lst_path).read().splitlines()
         mix_lst=list(filter(lambda x: x.split(',')[0]==partition, mix_lst))
@@ -120,14 +120,14 @@ class dataset(data.Dataset):
                 roiSequence_cut = roiSequence[:visual_min_length]
                 if self.mask_type == 'substitution':
                     seq_len = min(visual_min_length, self.max_length*25)
-                    mask_length = int(min(random.random()*seq_len, self.masking_rate*seq_len))
+                    mask_length = int(min(random.random()*seq_len, self.mask_percentage*seq_len))
                     mask_start = np.random.randint(0, seq_len-mask_length)
                     # print("mask_start:{} mask_length:{}".format(mask_start, mask_length))
                     sub_list = roiSequence[-mask_length:]
                     roiSequence_cut[mask_start:mask_start+mask_length] = sub_list
                 elif self.mask_type == 'repeat':
                     seq_len = min(visual_min_length, self.max_length*25)
-                    mask_length = int(min(random.random()*seq_len, self.masking_rate*seq_len))
+                    mask_length = int(min(random.random()*seq_len, self.mask_percentage*seq_len))
                     mask_start = np.random.randint(0, seq_len-mask_length)
                     repeat_list = [roiSequence[mask_start] for i in range(mask_length)]
                     roiSequence_cut[mask_start:mask_start+mask_length] = repeat_list

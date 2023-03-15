@@ -11,7 +11,7 @@ from torch.autograd import Variable
 # Model framework
 class AudioVisualModel(nn.Module):
     def __init__(self, enc_dim=512, feature_dim=256, hidden_dim=128, sr=16000, win=2, layer=8, R_a=1, R_av=3, 
-                 kernel=3, causal=False, requires_grad_pretrained=True,
+                 kernel=3, causal=False, requires_grad_pretrained=True, feature_layers=[None],
                  weights_lip_reading='/home/liuqinghua/code/code_space/realtime_extract/MuSE_demo-master/model/visual_frontend.pt',
                  avHuBERT_path='/mntnfs/lee_data1/chenshutang/mask_avhubert/av_hubert/avhubert',
                  weights_avHuBERT='/mntnfs/lee_data1/chenshutang/pretrained/avhubert/base_vox_iter5_clean.pt'):
@@ -33,18 +33,18 @@ class AudioVisualModel(nn.Module):
         self.weights_lip_reading = weights_lip_reading # checkpoint path
         self.avHuBERT_path = avHuBERT_path
         self.weights_avHuBERT = weights_avHuBERT
+        self.feature_layers = feature_layers
 
-        # # loading pretrained model
+        # visual encoder
+        self.avHuBERT = model_builder.av_hubert_net(user_dir=self.avHuBERT_path, weights=self.weights_avHuBERT)
         # self.visual_front_end = model_builder.lip_reading_net(weights=self.weights_lip_reading)
-        # for p in self.parameters():
-        #     p.requires_grad = self.requires_grad_pretrained
+        for p in self.parameters():
+            p.requires_grad = self.requires_grad_pretrained
 
         # audio encoder
         self.audio_enc = nn.Conv1d(1, self.enc_dim, self.win, bias=False, stride=self.stride)
 
-        # visual encoder
-        self.avHuBERT = model_builder.av_hubert_net(user_dir=self.avHuBERT_path, weights=self.weights_avHuBERT)
-        self.avhubert_adpt = model_builder.AVHuBERT_Adapter(B=768, H=256, Num_Layers=1)
+        self.visual_adapt = model_builder.AVHuBERT_Adapter(B=768, H=256, Num_Layers=len(self.feature_layers))
         # self.visual_adapt = model_builder.videoEncoder(self.feature_dim, self.feature_dim*2, 5)
 
         # separator
@@ -53,6 +53,10 @@ class AudioVisualModel(nn.Module):
 
         # decoder
         self.decoder = nn.ConvTranspose1d(self.enc_dim, 1, self.win, bias=False, stride=self.stride)
+        
+        # learnable weight
+        self.W = nn.Parameter(torch.randn(len(feature_layers)))
+
         
     def forward(self, mixture, visual):
         # padding
@@ -70,8 +74,12 @@ class AudioVisualModel(nn.Module):
         visual = visual.unsqueeze(dim=1)
         
         # new frame encoder
-        visual_emb = model_builder.av_hubert_feature(self.avHuBERT, visual, audio=None, output_layer=None)
-        visual_emb = self.avhubert_adpt(visual_emb)
+        visual_emb = 0
+        w = F.softmax(self.W, dim=-1)
+        for i, layer in enumerate(self.feature_layers):
+            visual_emb += w[i] * model_builder.av_hubert_feature(self.avHuBERT, visual, audio=None, output_layer=layer)
+        visual_emb = self.visual_adapt(visual_emb)
+            
         
         # lip movement resampling
         visual_emb = F.interpolate(visual_emb, L, mode='linear', align_corners=False)
@@ -110,7 +118,7 @@ class AudioVisualModel(nn.Module):
 
 class AudioOnlyModel(nn.Module):
     def __init__(self, enc_dim=512, feature_dim=128, hidden_dim=128, sr=16000, win=2, layer=8, R=6,  
-                 kernel=3, causal=False):
+                 kernel=3, causal=False, feature_layers=[None]):
         super(AudioOnlyModel, self).__init__()
         
         # hyper parameters
@@ -124,6 +132,7 @@ class AudioOnlyModel(nn.Module):
         self.R = R
         self.kernel = kernel
         self.causal = causal
+        self.feature_layers = feature_layers
         
         # encoder
         self.audio_enc = nn.Conv1d(1, self.enc_dim, self.win, bias=False, stride=self.stride)
@@ -136,6 +145,7 @@ class AudioOnlyModel(nn.Module):
 
         # decoder
         self.decoder = nn.ConvTranspose1d(self.enc_dim, 1, self.win, bias=False, stride=self.stride)
+        
         
     def forward(self, input):
         mixture = input['audio_mix']
@@ -155,6 +165,7 @@ class AudioOnlyModel(nn.Module):
         output = self.decoder(masked_output.view(batch_size*self.num_spks, self.enc_dim, -1))  # B*num_spk, 1, L
         output = output[:,:,self.stride:-(rest+self.stride)].contiguous()  # B*num_spk, 1, L
         output = output.view(batch_size,self.num_spks, -1)  # B, num_spk, T
+        
         
         return output
 

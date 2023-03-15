@@ -78,6 +78,8 @@ if __name__ == '__main__':
     parser.add_argument('--audio_direc', type=str, default='/workspace/liuqinghua/datasets/lrs3/wav/')
     parser.add_argument('--video_direc', type=str, default='/workspace/liuqinghua/datasets/lrs3/')
     parser.add_argument('--max_length', default=6, type=int)
+    parser.add_argument('--mask_percentage', default=0.2, type=float,
+                    help='Percentage of masking video sequence')
     
     # Training    
     parser.add_argument('--batch_size', default=4, type=int,
@@ -112,8 +114,6 @@ if __name__ == '__main__':
                         help='Whether to use use_tensorboard')
     parser.add_argument('--continue_from', type=str, default='',
                         help='Whether to resume training')
-    parser.add_argument('--mask_percentage', default=0.2, type=float,
-                        help='Percentage of masking video sequence')
 
     # Distributed training
     parser.add_argument("--local_rank", default=0, type=int)
