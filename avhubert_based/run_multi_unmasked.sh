@@ -5,13 +5,12 @@ mask_percentage=0.0
 # mask_percentage=0.4
 # mask_percentage=0.6
 # mask_percentage=0.8
-continue_from=
-for 
+continue_from= 
 if [ -z ${continue_from} ]; then
-    log_name='mask_repeat'
-    mkdir logs/$log_name/$mask_percentage/'graded_multi'
+    log_name="mask_repeat/${mask_percentage}/graded_multi"
+    mkdir -p logs/$log_name
 else
-    log_name=${continue_from}/$mask_percentage/'graded_multi'
+    log_name=${continue_from}
 fi
 
 # CUDA_VISIBLE_DEVICES="$gpu_id" \

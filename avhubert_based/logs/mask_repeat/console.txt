@@ -1,0 +1,6 @@
+['/mntnfs/lee_data1/chenshutang/robust_SS/avhubert_based', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python38.zip', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python3.8', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python3.8/lib-dynload', '/mntnfs/lee_data1/chenshutang/.conda/envs/avhubert/lib/python3.8/site-packages', '/mntnfs/lee_data1/chenshutang/robust_SS/common_utils']
+Experiment Config:
+ Namespace(C=2, L=40, N=256, audio_direc='/mntnfs/lee_data1/liuqinghua/dataset/lrs3/wav/', batch_size=4, continue_from='', distributed=False, epochs=30, feature_layers=[1, 6, 12], local_rank=0, log_name='mask_repeat', lr=0.001, mask_percentage=0.2, mask_type='repeat', max_length=6, max_norm=5, mix_lst_path='/mntnfs/lee_data1/liuqinghua/dataset/lrs3/lrs3_mixture_20k.csv', mixture_direc='/mntnfs/lee_data1/liuqinghua/dataset/lrs3/wav/mixture/', num_workers=16, pretrain_grad=True, use_tensorboard=1, video_direc='/mntnfs/lee_data1/liuqinghua/dataset/lrs3/', world_size=1)
+Loading weights for AV_HuBERT
+param: 129.432106 Mb
+torch.Size([2, 48000])

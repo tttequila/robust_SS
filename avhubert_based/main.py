@@ -134,7 +134,7 @@ if __name__ == '__main__':
 
     assert torch.backends.cudnn.enabled, "Amp requires cudnn backend to be enabled."
     
-    main(args)
-    # test_model()    
+    # main(args)
+    test_model()    
     
 
