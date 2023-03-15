@@ -1,11 +1,13 @@
-import sys
-sys.path.append("..")
+import sys, os
+abs_path = (os.path.abspath(__file__)).split("/")[:-2]
+abs_path += ["common_utils"]
+sys.path.append("/".join(abs_path))
+print(sys.path)
 
-import os
 import argparse
 import torch
-from common_utils.utils import *
-from networks_nograd import AudioVisualModel, AudioOnlyModel, test_model
+from utils import *
+from networks import AudioVisualModel, AudioOnlyModel, test_model
 from solver import Solver
 import warnings
 import random
@@ -84,7 +86,7 @@ if __name__ == '__main__':
                         help='Number of workers to generate minibatch')
     parser.add_argument('--epochs', default=30, type=int,
                         help='Number of maximum epochs')
-    parser.add_argument('--mask_type', default='repeat', type=str, help='gaussian, speckle, substitution, repeat')
+    parser.add_argument('--mask_type', default='repeat', type=str, help='gaussian, speckle, substitution, repeat, and other for unmasked')
 
     # Model hyperparameters
     parser.add_argument('--L', default=40, type=int,
@@ -93,6 +95,9 @@ if __name__ == '__main__':
                         help='Number of filters in autoencoder')
     parser.add_argument('--C', type=int, default=2,
                         help='number of speakers to mix')
+    parser.add_argument('--pretrain_grad', default=False, type=str2bool,
+                    help='Set up the parameter of pretained model')
+
 
     # optimizer
     parser.add_argument('--lr', default=1e-3, type=float,
@@ -124,6 +129,7 @@ if __name__ == '__main__':
 
     assert torch.backends.cudnn.enabled, "Amp requires cudnn backend to be enabled."
     
-    main(args)
+    # main(args)
+    test_model()    
     
 

@@ -1,11 +1,13 @@
-import sys
-sys.path.append("..")
+import sys, os
+abs_path = (os.path.abspath(__file__)).split("/")[:-2]
+abs_path += ["common_utils"]
+sys.path.append("/".join(abs_path))
+print(sys.path)
 
-import os
 import argparse
 import torch
-from common_utils.utils import *
-from networks_nograd import AudioVisualModel, AudioOnlyModel, test_model
+from utils import *
+from networks import AudioVisualModel, AudioOnlyModel, test_model
 from solver import Solver
 import warnings
 import random
@@ -76,6 +78,8 @@ if __name__ == '__main__':
     parser.add_argument('--audio_direc', type=str, default='/workspace/liuqinghua/datasets/lrs3/wav/')
     parser.add_argument('--video_direc', type=str, default='/workspace/liuqinghua/datasets/lrs3/')
     parser.add_argument('--max_length', default=6, type=int)
+    parser.add_argument('--mask_percentage', default=0.2, type=float,
+                    help='Percentage of masking video sequence')
     
     # Training    
     parser.add_argument('--batch_size', default=4, type=int,
@@ -84,7 +88,7 @@ if __name__ == '__main__':
                         help='Number of workers to generate minibatch')
     parser.add_argument('--epochs', default=30, type=int,
                         help='Number of maximum epochs')
-    parser.add_argument('--mask_type', default='repeat', type=str, help='gaussian, speckle, substitution, repeat')
+    parser.add_argument('--mask_type', default='repeat', type=str, help='gaussian, speckle, substitution, repeat, and other for unmasked')
 
     # Model hyperparameters
     parser.add_argument('--L', default=40, type=int,
@@ -93,6 +97,10 @@ if __name__ == '__main__':
                         help='Number of filters in autoencoder')
     parser.add_argument('--C', type=int, default=2,
                         help='number of speakers to mix')
+    parser.add_argument('--pretrain_grad', default=False, type=str2bool,
+                        help='Set up the parameter of pretained model')
+    parser.add_argument('--feature_layers', default=[None], type=int, nargs='+',
+                        help='List of feature layers')
 
     # optimizer
     parser.add_argument('--lr', default=1e-3, type=float,
@@ -122,8 +130,11 @@ if __name__ == '__main__':
         args.distributed = int(os.environ['WORLD_SIZE']) > 1
         args.world_size = int(os.environ['WORLD_SIZE'])
 
+    print('Experiment Config:\n', args)
+
     assert torch.backends.cudnn.enabled, "Amp requires cudnn backend to be enabled."
     
     main(args)
+    # test_model()    
     
 

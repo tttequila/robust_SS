@@ -9,9 +9,9 @@ continue_from=
 for 
 if [ -z ${continue_from} ]; then
     log_name='mask_repeat'
-    mkdir logs/$log_name/$mask_percentage
+    mkdir logs/$log_name/$mask_percentage/'baseline'
 else
-    log_name=${continue_from}/$mask_percentage
+    log_name=${continue_from}/$mask_percentage/'baseline'
 fi
 
 # CUDA_VISIBLE_DEVICES="$gpu_id" \
@@ -26,8 +26,6 @@ torchrun --rdzv_backend=c10d --rdzv_endpoint=localhost:1421 --nnodes=1 --nproc_p
 --epochs 30 \
 --lr 1e-3 \
 --use_tensorboard 1 \
---feature_layers [1, 6, 12] \
 --pretrain_grad True \
---mask_percentage $mask_percentage \
 >logs/$log_name/console.txt 2>&1
 # --continue_from logs/${continue_from} \

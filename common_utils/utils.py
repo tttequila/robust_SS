@@ -10,6 +10,7 @@ from itertools import permutations
 import tqdm
 import os
 import cv2
+from argparse import ArgumentTypeError
 
 EPS = 1e-6
 
@@ -263,6 +264,14 @@ if __name__ == '__main__':
         print(v_tgt.squeeze().size())
         break
         # pass
+
+def str2bool(arg:str):
+    if arg.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif arg.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise ArgumentTypeError("unsupported bool value, please check argument(s) with boolean type")
 
     # a = np.ones((24,512))
     # print(a.shape)

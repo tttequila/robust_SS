@@ -1,3 +1,6 @@
+import sys
+sys.path.append("..")
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -31,18 +34,17 @@ class AudioVisualModel(nn.Module):
         self.avHuBERT_path = avHuBERT_path
         self.weights_avHuBERT = weights_avHuBERT
 
-        # # loading pretrained model
-        # self.visual_front_end = model_builder.lip_reading_net(weights=self.weights_lip_reading)
-        # for p in self.parameters():
-        #     p.requires_grad = self.requires_grad_pretrained
+        # loading pretrained model
+        # self.avHuBERT = model_builder.av_hubert_net(user_dir=self.avHuBERT_path, weights=self.weights_avHuBERT)
+        self.visual_front_end = model_builder.lip_reading_net(weights=self.weights_lip_reading)
+        for p in self.parameters():
+            p.requires_grad = self.requires_grad_pretrained
 
         # audio encoder
         self.audio_enc = nn.Conv1d(1, self.enc_dim, self.win, bias=False, stride=self.stride)
 
-        # visual encoder
-        self.avHuBERT = model_builder.av_hubert_net(user_dir=self.avHuBERT_path, weights=self.weights_avHuBERT)
-        self.avhubert_adpt = model_builder.AVHuBERT_Adapter(B=768, H=256, Num_Layers=1)
-        # self.visual_adapt = model_builder.videoEncoder(self.feature_dim, self.feature_dim*2, 5)
+        # self.avhubert_adpt = model_builder.AVHuBERT_Adapter(B=768, H=256, Num_Layers=1)
+        self.visual_adapt = model_builder.videoEncoder(self.feature_dim, self.feature_dim*2, 5)
 
         # separator
         self.separator = model_builder.Separator_TCN(self.enc_dim, self.enc_dim, self.feature_dim, self.feature_dim*4,
@@ -59,20 +61,17 @@ class AudioVisualModel(nn.Module):
         enc_output = self.audio_enc(output)  # B, N, L
         batch_size, _, L = enc_output.shape
         
-        # # frame encoder
-        # visual_emb = self.visual_front_end(visual)   # B, num_frame, 256 
-        # visual_emb = self.visual_adapt(visual_emb)
-        # visual_emb = F.interpolate(visual_emb, L, mode='linear', align_corners=False)
-        
-        visual = visual.unsqueeze(dim=1)
-        
-        # new frame encoder
-        with torch.no_grad():
-            visual_emb = model_builder.av_hubert_feature(self.avHuBERT, visual, audio=None, output_layer=None)
-        visual_emb = self.avhubert_adpt(visual_emb)
-        
-        # lip movement resampling
+        # frame encoder
+        visual_emb = self.visual_front_end(visual)   # B, num_frame, 256 
+        visual_emb = self.visual_adapt(visual_emb)
         visual_emb = F.interpolate(visual_emb, L, mode='linear', align_corners=False)
+        
+        # visual = visual.unsqueeze(dim=1)
+        # # new frame encoder
+        # visual_emb = model_builder.av_hubert_feature(self.avHuBERT, visual, audio=None, output_layer=None)
+        # visual_emb = self.avhubert_adpt(visual_emb)
+        # # lip movement resampling
+        # visual_emb = F.interpolate(visual_emb, L, mode='linear', align_corners=False)
 
         # generate masks
         mask = self.separator(enc_output, visual_emb).view(batch_size, self.enc_dim, -1)  # B, N, L
@@ -189,6 +188,7 @@ def test_model():
     nnet = AudioVisualModel()
     x = nnet(x, visual)
     print("param:", str(check_parameters(nnet))+' Mb')
+    print(x.shape)
     for name, param in nnet.named_parameters():
         if not param.requires_grad:
             print(name)

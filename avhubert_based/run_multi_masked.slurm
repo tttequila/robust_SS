@@ -7,5 +7,5 @@
 
 source /home/chenshutang/.bashrc
 conda activate avhubert
-cd /mntnfs/lee_data1/chenshutang/robust_SS/avhubert_multilayer_masked
-bash run.sh
+cd /mntnfs/lee_data1/chenshutang/robust_SS/avhubert_based
+bash run_multi_masked.sh
